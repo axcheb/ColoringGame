@@ -4,23 +4,37 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.viewport.Viewport;
+
+import ru.axcheb.coloringgame.model.ImageState;
+import ru.axcheb.coloringgame.model.IntPair;
+import ru.axcheb.coloringgame.view.ColorButtonsPanel;
+import ru.axcheb.coloringgame.view.ImagePanel;
 
 public class GameScreenGestureListener implements GestureDetector.GestureListener {
 
-    private Viewport viewport;
+    private ImagePanel imagePanel;
+    private ColorButtonsPanel colorButtonsPanel;
+    private ImageState imageState;
 
-    public GameScreenGestureListener(Viewport viewport) {
-        this.viewport = viewport;
+    public GameScreenGestureListener(ImagePanel imagePanel, ColorButtonsPanel colorButtonsPanel, ImageState imageState) {
+        this.imagePanel = imagePanel;
+        this.colorButtonsPanel = colorButtonsPanel;
+        this.imageState = imageState;
     }
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
-        Gdx.app.log("INFO","touchDown");
-        Gdx.app.log("INFO",x + " " + y + " " + pointer + " " + button);
-
-        Vector2 unProject = viewport.unproject(new Vector2(x, y));
-        Gdx.app.log("INFO",unProject.x + " " + unProject.y);
+        Vector2 unProject = colorButtonsPanel.getViewport().unproject(new Vector2(x, y));
+        Integer colorNumber = colorButtonsPanel.getButtonNumber(unProject);
+        if (colorNumber != null) {
+            imageState.selectColor(colorNumber);
+        } else {
+            unProject = imagePanel.getViewport().unproject(new Vector2(x, y));
+            IntPair imgCoordinate = imagePanel.getImageCoordinate(unProject);
+            if (imgCoordinate != null) {
+                imageState.setImageColor(imgCoordinate);
+            }
+        }
 
         return false;
     }
@@ -52,10 +66,10 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean zoom(float initialDistance, float distance) {
-        OrthographicCamera camera = (OrthographicCamera) viewport.getCamera();
+        OrthographicCamera camera = (OrthographicCamera) imagePanel.getViewport().getCamera();
         Gdx.app.log("INFO", "Zoom performed");
         camera.zoom = (initialDistance / distance) * camera.zoom;
-        viewport.apply();
+        imagePanel.getViewport().apply();
         return true;
     }
 
