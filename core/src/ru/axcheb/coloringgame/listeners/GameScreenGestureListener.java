@@ -24,6 +24,11 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
+        colorCellOnTouch(x, y);
+        return true;
+    }
+
+    private void colorCellOnTouch(float x, float y) {
         Vector2 unProject = colorButtonsPanel.getViewport().unproject(new Vector2(x, y));
         Integer colorNumber = colorButtonsPanel.getButtonNumber(unProject);
         if (colorNumber != null) {
@@ -32,16 +37,25 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
             unProject = imagePanel.getViewport().unproject(new Vector2(x, y));
             IntPair imgCoordinate = imagePanel.getImageCoordinate(unProject);
             if (imgCoordinate != null) {
-                imageState.setImageColor(imgCoordinate);
+                imageState.colorCell(imgCoordinate);
             }
         }
-
-        return false;
     }
 
     @Override
     public boolean tap(float x, float y, int count, int button) {
-        return false;
+        if (count == 2) {
+            boostColor(x, y);
+        }
+        return true;
+    }
+
+    private void boostColor(float x, float y) {
+        Vector2 unProject = imagePanel.getViewport().unproject(new Vector2(x, y));
+        IntPair imgCoordinate = imagePanel.getImageCoordinate(unProject);
+        if (imgCoordinate != null) {
+            imageState.boost(imgCoordinate);
+        }
     }
 
     @Override
@@ -56,7 +70,16 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-        return false;
+        colorCellOnPan(x, y, deltaX, deltaY);
+        return true;
+    }
+
+    private void colorCellOnPan(float x, float y, float deltaX, float deltaY) {
+        Vector2 unProject = imagePanel.getViewport().unproject(new Vector2(x + deltaX, y + deltaY));
+        IntPair imgCoordinate = imagePanel.getImageCoordinate(unProject);
+        if (imgCoordinate != null) {
+            imageState.colorCell(imgCoordinate);
+        }
     }
 
     @Override

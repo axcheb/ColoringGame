@@ -22,8 +22,8 @@ public class DesktopImageState extends ImageState {
             int width = bufferedImage.getWidth();
             Integer[][] colorArray = new Integer[width][height];
             for (int i = 0; i < width; i ++) {
-                for (int j = height - 1; j >= 0; j --) {
-                    colorArray[i][j] = bufferedImage.getRGB(i, j);
+                for (int j = 0; j < height; j ++) {
+                    colorArray[i][height - 1 - j] = bufferedImage.getRGB(i, j);
                 }
             }
             return colorArray;

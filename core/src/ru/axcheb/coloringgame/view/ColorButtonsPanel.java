@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.List;
 import java.util.Map;
 
 import ru.axcheb.coloringgame.model.ImageState;
@@ -21,6 +22,8 @@ public class ColorButtonsPanel {
     private static float NORMAL_WIDTH = 40f;
     private static float NORMAL_HEIGHT = 40f;
     private static float SELECTED_HEIGHT = 60f;
+
+    public static int COLOR_START_NUMBER = 1;
 
     private Viewport viewport;
     private SpriteBatch batch;
@@ -43,11 +46,24 @@ public class ColorButtonsPanel {
         batch.setProjectionMatrix(viewport.getCamera().combined);
         renderer.setProjectionMatrix(viewport.getCamera().combined);
 
+        renderBoosterButtons();
+        renderColorButtons();
+    }
+
+    private void renderBoosterButtons() {
+
+        // TODO Бомба. Выбирается как цвет, закрашивает область 10x10px нужными цветами.
+    }
+
+    private void renderColorButtons() {
         renderer.begin(ShapeRenderer.ShapeType.Filled);
         int xPosition = 0;
-        for (Map.Entry<Integer, Integer> entity : imageState.getColorMap().entrySet()) {
-            renderer.setColor(getColor(entity.getKey()));
-            Integer colorNumber = entity.getValue();
+        Map<Integer, Integer> map = imageState.getColorMap();
+
+        List<Integer> usedColors = imageState.getUsedColors();
+        for (Integer color : usedColors) {
+            renderer.setColor(getColor(color));
+            Integer colorNumber = map.get(color);
             float height = NORMAL_HEIGHT;
             if (imageState.getSelectedColorNumber() != null && imageState.getSelectedColorNumber().equals(colorNumber)) {
                 height = SELECTED_HEIGHT;
@@ -59,11 +75,11 @@ public class ColorButtonsPanel {
 
         batch.begin();
         xPosition = 0;
-        for (Map.Entry<Integer, Integer> entity : imageState.getColorMap().entrySet()) {
-            Integer colorNumber = entity.getValue();
-            cellNumberFont.draw(batch, colorNumber.toString(), xPosition + 10, 20);
+        for (int i = 0; i < usedColors.size(); i ++) {
+            cellNumberFont.draw(batch, String.valueOf(i + COLOR_START_NUMBER), xPosition + 10, 20);
             xPosition += 40;
         }
+
         batch.end();
     }
 
@@ -89,6 +105,7 @@ public class ColorButtonsPanel {
     }
 
     public void dispose() {
+        cellNumberFont.dispose();
         batch.dispose();
         renderer.dispose();
     }

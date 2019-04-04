@@ -68,9 +68,11 @@ public class ImagePanel {
 
         batch.begin();
         renderCell((i, j) -> {
-            Integer number = imageState.getInitialNumberByCoordinate(i, j);
-            Vector2 cellVector = getCellPosition(i, j);
-            cellNumberFont.draw(batch, number.toString(), cellVector.x + 10, cellVector.y + 20);
+            if (imageState.getRgb(i, j) == null) {
+                Integer number = imageState.getInitialNumberByCoordinate(i, j);
+                Vector2 cellVector = getCellPosition(i, j);
+                cellNumberFont.draw(batch, String.valueOf(number + ColorButtonsPanel.COLOR_START_NUMBER), cellVector.x + 10, cellVector.y + 20);
+            }
         });
         batch.end();
     }
@@ -107,6 +109,7 @@ public class ImagePanel {
     }
 
     public void dispose() {
+        cellNumberFont.dispose();
         batch.dispose();
         renderer.dispose();
     }

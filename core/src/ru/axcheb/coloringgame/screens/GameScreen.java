@@ -10,6 +10,7 @@ import ru.axcheb.coloringgame.listeners.GameScreenGestureListener;
 import ru.axcheb.coloringgame.listeners.GameScreenKeyListener;
 import ru.axcheb.coloringgame.model.ImageState;
 import ru.axcheb.coloringgame.view.ColorButtonsPanel;
+import ru.axcheb.coloringgame.view.CounterPanel;
 import ru.axcheb.coloringgame.view.ImagePanel;
 
 public class GameScreen implements Screen {
@@ -19,10 +20,12 @@ public class GameScreen implements Screen {
 
     private ColorButtonsPanel colorButtonsPanel;
     private ImagePanel imagePanel;
+    private CounterPanel counterPanel;
 
     public GameScreen(ImageState imageState) {
         colorButtonsPanel = new ColorButtonsPanel(imageState);
         imagePanel = new ImagePanel(imageState);
+        counterPanel = new CounterPanel(imageState);
 
         Gdx.input.setInputProcessor(new GestureDetector(new GameScreenGestureListener(imagePanel, colorButtonsPanel, imageState)));
 
@@ -44,6 +47,7 @@ public class GameScreen implements Screen {
 
         imagePanel.render();
         colorButtonsPanel.render();
+        counterPanel.render();
     }
 
     @Override
@@ -71,6 +75,7 @@ public class GameScreen implements Screen {
     public void dispose() {
         colorButtonsPanel.dispose();
         imagePanel.dispose();
+        counterPanel.dispose();
     }
 
 }
