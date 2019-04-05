@@ -19,6 +19,7 @@ public abstract class ImageState {
     private Map<Integer, Integer> colorToNumberMap;
     private List<Integer> usedColors;
     private Integer selectedColorNumber;
+    private boolean isBomb;
 
     private int cellsCount;
     private int colloredCellsCount;
@@ -89,10 +90,20 @@ public abstract class ImageState {
 
     public void selectColor(int colorNumber) {
         selectedColorNumber = colorNumber;
+        isBomb = false;
     }
 
     public Integer getSelectedColorNumber() {
         return selectedColorNumber;
+    }
+
+    public void selectBomb() {
+        isBomb = true;
+        selectedColorNumber = null;
+    }
+
+    public boolean isBomb() {
+        return isBomb;
     }
 
     public boolean colorCell(IntPair pair) {
@@ -101,15 +112,31 @@ public abstract class ImageState {
         }
 
         Integer rgb = initialColorArray[pair.getX()][pair.getY()];
-        if (getInitialNumberByRgb(rgb).equals(selectedColorNumber) && colorArray[pair.getX()][pair.getY()] == null) {
-            colorArray[pair.getX()][pair.getY()] = initialColorArray[pair.getX()][pair.getY()];
-            colloredCellsCount ++;
+        if (getInitialNumberByRgb(rgb).equals(selectedColorNumber)) {
+            setInitialColor(pair);
+            return true;
+        } else if (isBomb) {
+            for (IntPair bombPair : nearby(pair, 4)) { // 9x9
+                setInitialColor(bombPair);
+            }
             return true;
         }
+
         return false;
     }
 
+    private void setInitialColor(IntPair pair) {
+        if (colorArray[pair.getX()][pair.getY()] == null) {
+            colorArray[pair.getX()][pair.getY()] = initialColorArray[pair.getX()][pair.getY()];
+            colloredCellsCount ++;
+        }
+    }
+
     public void boost(IntPair pair) {
+        if (selectedColorNumber == null) {
+            return;
+        }
+
         for (IntPair cell : pair.nearby()) {
             if (colorCell(cell)) {
                 boost(cell);
@@ -129,5 +156,27 @@ public abstract class ImageState {
         Color color = new Color();
         Color.rgb888ToColor(color, rgb);
         return color;
+    }
+
+    public List<IntPair> nearby(IntPair pair, int near) {
+        int x = pair.getX();
+        int y = pair.getY();
+
+        int minX = x - near;
+        int maxX = x + near + 1;
+        int minY = y - near;
+        int maxY = y + near + 1;
+        minX = (minX < 0) ? 0 : minX;
+        minY = (minY < 0) ? 0 : minY;
+        maxX = (maxX < getWidth()) ? maxX : getWidth();
+        maxY = (maxY < getHeight()) ? maxY : getHeight();
+
+        List<IntPair> result = new ArrayList<>();
+        for (int i = minX; i < maxX; i ++) {
+            for (int j = minY; j < maxY; j ++) {
+                result.add(new IntPair(i, j));
+            }
+        }
+        return result;
     }
 }

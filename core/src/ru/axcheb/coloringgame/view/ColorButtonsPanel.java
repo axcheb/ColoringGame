@@ -19,6 +19,8 @@ import static ru.axcheb.coloringgame.screens.GameScreen.WORLD_WIDTH;
 
 public class ColorButtonsPanel {
 
+    private static float COLOR_BUTTON_START = 40f;
+
     private static float NORMAL_WIDTH = 40f;
     private static float NORMAL_HEIGHT = 40f;
     private static float SELECTED_HEIGHT = 60f;
@@ -46,18 +48,25 @@ public class ColorButtonsPanel {
         batch.setProjectionMatrix(viewport.getCamera().combined);
         renderer.setProjectionMatrix(viewport.getCamera().combined);
 
-        renderBoosterButtons();
+        renderBombButton();
         renderColorButtons();
     }
 
-    private void renderBoosterButtons() {
-
-        // TODO Бомба. Выбирается как цвет, закрашивает область 10x10px нужными цветами.
+    private void renderBombButton() {
+        // TODO Бомба.   Выбирается как цвет, закрашивает область 10x10px нужными цветами.
+        renderer.begin(ShapeRenderer.ShapeType.Filled);
+        renderer.setColor(Color.GREEN);
+        float height = NORMAL_HEIGHT;
+        if (imageState.isBomb()) {
+            height = SELECTED_HEIGHT;
+        }
+        renderer.rect(0f, 0f, NORMAL_WIDTH, height);
+        renderer.end();
     }
 
     private void renderColorButtons() {
         renderer.begin(ShapeRenderer.ShapeType.Filled);
-        int xPosition = 0;
+        float xPosition = COLOR_BUTTON_START;
         Map<Integer, Integer> map = imageState.getColorMap();
 
         List<Integer> usedColors = imageState.getUsedColors();
@@ -69,15 +78,15 @@ public class ColorButtonsPanel {
                 height = SELECTED_HEIGHT;
             }
             renderer.rect(xPosition, 0, NORMAL_WIDTH, height);
-            xPosition += 40;
+            xPosition += 40f;
         }
         renderer.end();
 
         batch.begin();
-        xPosition = 0;
+        xPosition = COLOR_BUTTON_START;
         for (int i = 0; i < usedColors.size(); i ++) {
-            cellNumberFont.draw(batch, String.valueOf(i + COLOR_START_NUMBER), xPosition + 10, 20);
-            xPosition += 40;
+            cellNumberFont.draw(batch, String.valueOf(i + COLOR_START_NUMBER), xPosition + 10f, 20f);
+            xPosition += 40f;
         }
 
         batch.end();
@@ -87,13 +96,25 @@ public class ColorButtonsPanel {
         return viewport;
     }
 
+    public boolean isBombButton(Vector2 position) {
+        if (position.y > NORMAL_HEIGHT) {
+            return false;
+        }
+
+        if (position.x < NORMAL_WIDTH) {
+            return true;
+        }
+        return false;
+    }
+
     public Integer getButtonNumber(Vector2 position) {
         if (position.y > NORMAL_HEIGHT) {
             return null;
         }
 
-        int colorNumber = (int) (position.x / NORMAL_WIDTH);
-        if (colorNumber < imageState.getColorMap().size()) {
+        float xPos = position.x - COLOR_BUTTON_START;
+        int colorNumber = (int) (xPos / NORMAL_WIDTH);
+        if (xPos > 0 && colorNumber < imageState.getColorMap().size()) {
             return colorNumber;
         }
 

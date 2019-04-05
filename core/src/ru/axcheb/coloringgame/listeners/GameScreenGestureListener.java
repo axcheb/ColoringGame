@@ -33,6 +33,8 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
         Integer colorNumber = colorButtonsPanel.getButtonNumber(unProject);
         if (colorNumber != null) {
             imageState.selectColor(colorNumber);
+        } else if (colorButtonsPanel.isBombButton(unProject)) {
+            imageState.selectBomb();
         } else {
             unProject = imagePanel.getViewport().unproject(new Vector2(x, y));
             IntPair imgCoordinate = imagePanel.getImageCoordinate(unProject);
@@ -70,6 +72,9 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
+        if (imageState.getSelectedColorNumber() == null) {
+            return false;
+        }
         colorCellOnPan(x, y, deltaX, deltaY);
         return true;
     }
