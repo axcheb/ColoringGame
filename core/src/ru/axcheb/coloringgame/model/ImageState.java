@@ -10,14 +10,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public abstract class ImageState {
 
     private Integer gameMode;
 
-    private Integer PLAYING_MODE = 1;
-    private Integer COMPLETED_MODE = 2;
-    private Integer HISTORY_MODE = 3;
+    public static Integer PLAYING_MODE = 1;
+    public static Integer COMPLETED_MODE = 2;
+    public static Integer HISTORY_MODE = 3;
+
+    private List<Consumer<Integer>> modeChangeListeners = new ArrayList<>();
 
     private Integer[][] initialColorArray;
     private Integer[][] colorArray;
@@ -139,7 +142,7 @@ public abstract class ImageState {
             colorArray[pair.getX()][pair.getY()] = initialColorArray[pair.getX()][pair.getY()];
             coloredCellsCount ++;
             if (isCompleted()) {
-                gameMode = COMPLETED_MODE;
+                changeGameMode(COMPLETED_MODE);
             }
             return true;
         }
@@ -156,6 +159,15 @@ public abstract class ImageState {
                 boost(cell);
             }
         }
+    }
+
+    private void changeGameMode(Integer mode) {
+        gameMode = mode;
+        modeChangeListeners.forEach(action -> action.accept(mode));
+    }
+
+    public void addModeChangeListener(Consumer<Integer> listener) {
+        modeChangeListeners.add(listener);
     }
 
     public int getCellsCount() {

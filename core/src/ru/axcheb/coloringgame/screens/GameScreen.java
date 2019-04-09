@@ -28,8 +28,12 @@ public class GameScreen implements Screen {
     private ImagePanel imagePanel;
     private CounterPanel counterPanel;
     private ColoringGame coloringGame;
+    private Dialog completedDialog;
     private Stage stage;
     private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+
+    private static String EXIT_ACTION = "exit";
+    private static String HISTORY_ACTION = "history";
 
     public GameScreen(ColoringGame coloringGame) {
         this.coloringGame = coloringGame;
@@ -39,6 +43,13 @@ public class GameScreen implements Screen {
         imagePanel = new ImagePanel(imageState);
         counterPanel = new CounterPanel(imageState);
 
+        completedDialog = createCompletedDialog();
+        imageState.addModeChangeListener(mode -> {
+            if (ImageState.COMPLETED_MODE.equals(mode)) {
+                completedDialog.show(stage);
+            }
+        });
+
         imageState.init("bb-cnt-2019.gif");
 
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
@@ -47,26 +58,32 @@ public class GameScreen implements Screen {
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
+    private Dialog createCompletedDialog() {
+        Screen me = this;
+        Dialog dialog = new Dialog("", skin) {
+            @Override
+            protected void result(Object object) {
+                if (EXIT_ACTION.equals(object)) {
+                    coloringGame.setScreen(new MenuScreen(coloringGame));
+                    me.dispose();
+                } else if (HISTORY_ACTION.equals(object)) {
+
+                }
+
+            }
+        };
+        dialog.text("The game is completed!");
+        dialog.button("Exit", EXIT_ACTION);
+        dialog.button("Show history", HISTORY_ACTION);
+        return dialog;
+    }
+
     @Override
     public void show() {
-//        Dialog dialog = new Dialog("Completed!", skin) {
-//
-//            @Override
-//            protected void result (Object object) {
-//
-//            }
-//        };
-//        dialog.text("Completed!");
-//        dialog.button("Exit", "object...");
-//        dialog.button("Show history", "object...");
-//
-//
-//        dialog.show(stage);
     }
 
     @Override
     public void render(float delta) {
-
         GameScreenKeyListener.handleKeyPress((OrthographicCamera) imagePanel.getViewport().getCamera());
         imagePanel.getViewport().apply();
 
