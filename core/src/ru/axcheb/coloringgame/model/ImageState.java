@@ -13,6 +13,12 @@ import java.util.Set;
 
 public abstract class ImageState {
 
+    private Integer gameMode;
+
+    private Integer PLAYING_MODE = 1;
+    private Integer COMPLETED_MODE = 2;
+    private Integer HISTORY_MODE = 3;
+
     private Integer[][] initialColorArray;
     private Integer[][] colorArray;
 
@@ -22,13 +28,14 @@ public abstract class ImageState {
     private boolean isBomb;
 
     private int cellsCount;
-    private int colloredCellsCount;
+    private int coloredCellsCount;
 
     //TODO history
 
     abstract public Integer[][] loadImage(String fileName);
 
     public void init(String fileName) {
+        gameMode = PLAYING_MODE;
         initialColorArray = loadImage(fileName);
         colorArray = new Integer[getWidth()][getHeight()];
         selectedColorNumber = null;
@@ -49,7 +56,7 @@ public abstract class ImageState {
         }
 
         cellsCount = getHeight() * getWidth();
-        colloredCellsCount = 0;
+        coloredCellsCount = 0;
     }
 
     /**
@@ -113,23 +120,30 @@ public abstract class ImageState {
 
         Integer rgb = initialColorArray[pair.getX()][pair.getY()];
         if (getInitialNumberByRgb(rgb).equals(selectedColorNumber)) {
-            setInitialColor(pair);
-            return true;
+            return setInitialColor(pair);
         } else if (isBomb) {
+            boolean result = false;
             for (IntPair bombPair : nearby(pair, 4)) { // 9x9
-                setInitialColor(bombPair);
+                if (setInitialColor(bombPair)) {
+                    result = true;
+                }
             }
-            return true;
+            return result;
         }
 
         return false;
     }
 
-    private void setInitialColor(IntPair pair) {
+    private boolean setInitialColor(IntPair pair) {
         if (colorArray[pair.getX()][pair.getY()] == null) {
             colorArray[pair.getX()][pair.getY()] = initialColorArray[pair.getX()][pair.getY()];
-            colloredCellsCount ++;
+            coloredCellsCount ++;
+            if (isCompleted()) {
+                gameMode = COMPLETED_MODE;
+            }
+            return true;
         }
+        return false;
     }
 
     public void boost(IntPair pair) {
@@ -148,8 +162,16 @@ public abstract class ImageState {
         return cellsCount;
     }
 
-    public int getColloredCellsCount() {
-        return colloredCellsCount;
+    public int getColoredCellsCount() {
+        return coloredCellsCount;
+    }
+
+    public boolean isCompleted() {
+        return coloredCellsCount == cellsCount;
+    }
+
+    public Integer getGameMode() {
+        return gameMode;
     }
 
     public static Color getColor(int rgb) {

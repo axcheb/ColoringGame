@@ -1,10 +1,9 @@
 package ru.axcheb.coloringgame;
 
 import com.badlogic.gdx.Game;
-import com.badlogic.gdx.Screen;
 
 import ru.axcheb.coloringgame.model.ImageState;
-import ru.axcheb.coloringgame.screens.GameScreen;
+import ru.axcheb.coloringgame.screens.MenuScreen;
 
 public class ColoringGame extends Game {
 
@@ -14,12 +13,12 @@ public class ColoringGame extends Game {
         this.imageState = imageState;
     }
 
-    private Screen gameScreen;
-
     @Override
     public void create() {
-        gameScreen = new GameScreen(imageState);
-        setScreen(gameScreen);
+        setScreen(new MenuScreen(this));
     }
 
+    public ImageState getImageState() {
+        return imageState;
+    }
 }

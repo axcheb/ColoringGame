@@ -1,11 +1,17 @@
 package ru.axcheb.coloringgame.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
+import ru.axcheb.coloringgame.ColoringGame;
 import ru.axcheb.coloringgame.listeners.GameScreenGestureListener;
 import ru.axcheb.coloringgame.listeners.GameScreenKeyListener;
 import ru.axcheb.coloringgame.model.ImageState;
@@ -21,19 +27,41 @@ public class GameScreen implements Screen {
     private ColorButtonsPanel colorButtonsPanel;
     private ImagePanel imagePanel;
     private CounterPanel counterPanel;
+    private ColoringGame coloringGame;
+    private Stage stage;
+    private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-    public GameScreen(ImageState imageState) {
+    public GameScreen(ColoringGame coloringGame) {
+        this.coloringGame = coloringGame;
+        stage = new Stage(new FitViewport(WORLD_WIDTH, WORLD_HEIGHT));
+        ImageState imageState = coloringGame.getImageState();
         colorButtonsPanel = new ColorButtonsPanel(imageState);
         imagePanel = new ImagePanel(imageState);
         counterPanel = new CounterPanel(imageState);
 
-        Gdx.input.setInputProcessor(new GestureDetector(new GameScreenGestureListener(imagePanel, colorButtonsPanel, imageState)));
-
         imageState.init("bb-cnt-2019.gif");
+
+        InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(new GestureDetector(new GameScreenGestureListener(imagePanel, colorButtonsPanel, imageState)));
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override
     public void show() {
+//        Dialog dialog = new Dialog("Completed!", skin) {
+//
+//            @Override
+//            protected void result (Object object) {
+//
+//            }
+//        };
+//        dialog.text("Completed!");
+//        dialog.button("Exit", "object...");
+//        dialog.button("Show history", "object...");
+//
+//
+//        dialog.show(stage);
     }
 
     @Override
@@ -48,6 +76,9 @@ public class GameScreen implements Screen {
         imagePanel.render();
         colorButtonsPanel.render();
         counterPanel.render();
+
+        stage.act();
+        stage.draw();
     }
 
     @Override
@@ -76,6 +107,7 @@ public class GameScreen implements Screen {
         colorButtonsPanel.dispose();
         imagePanel.dispose();
         counterPanel.dispose();
+        stage.dispose();
     }
 
 }
