@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,8 +33,14 @@ public abstract class ImageState {
 
     private int cellsCount;
     private int coloredCellsCount;
+    private int historyStep;
 
-    //TODO history
+    /**
+     * History.
+     * Internal list - batch.
+     * External list - list of batches.
+     */
+    private List<List<IntPair>> history;
 
     abstract public Integer[][] loadImage(String fileName);
 
@@ -42,6 +49,7 @@ public abstract class ImageState {
         initialColorArray = loadImage(fileName);
         colorArray = new Integer[getWidth()][getHeight()];
         selectedColorNumber = null;
+        history = new ArrayList<>();
 
         Set<Integer> colorsSet = new HashSet<>();
         for (int i = 0; i < getWidth(); i ++) {
@@ -116,54 +124,95 @@ public abstract class ImageState {
         return isBomb;
     }
 
-    public boolean colorCell(IntPair pair) {
+    public List<IntPair> colorCell(IntPair pair) {
+        List<IntPair> result = colorCell0(pair);
+        if (!result.isEmpty()) {
+            history.add(result);
+        }
+        return result;
+    }
+
+    private List<IntPair> colorCell0(IntPair pair) {
         if (pair.getX() < 0 || pair.getX() >= getWidth() || pair.getY() < 0 || pair.getY() >= getHeight()) {
-            return false;
+            return Collections.emptyList();
         }
 
         Integer rgb = initialColorArray[pair.getX()][pair.getY()];
         if (getInitialNumberByRgb(rgb).equals(selectedColorNumber)) {
-            return setInitialColor(pair);
+            IntPair colored = setInitialColor(pair);
+            return (colored == null) ? Collections.emptyList() : Collections.singletonList(colored);
         } else if (isBomb) {
-            boolean result = false;
+            List<IntPair> result = new ArrayList<>();
             for (IntPair bombPair : nearby(pair, 4)) { // 9x9
-                if (setInitialColor(bombPair)) {
-                    result = true;
+                IntPair colored = setInitialColor(bombPair);
+                if (colored != null) {
+                    result.add(colored);
                 }
             }
             return result;
         }
-
-        return false;
+        return Collections.emptyList();
     }
 
-    private boolean setInitialColor(IntPair pair) {
+    private IntPair setInitialColor(IntPair pair) {
         if (colorArray[pair.getX()][pair.getY()] == null) {
             colorArray[pair.getX()][pair.getY()] = initialColorArray[pair.getX()][pair.getY()];
             coloredCellsCount ++;
             if (isCompleted()) {
                 changeGameMode(COMPLETED_MODE);
             }
-            return true;
+            return pair;
         }
-        return false;
+        return null;
     }
 
-    public void boost(IntPair pair) {
+    public List<IntPair> boost(IntPair pair) {
+        List<IntPair> result = boost0(pair);
+        if (!result.isEmpty()) {
+            history.add(result);
+        }
+        return result;
+    }
+
+    private List<IntPair> boost0(IntPair pair) {
         if (selectedColorNumber == null) {
-            return;
+            return Collections.emptyList();
         }
 
+        List<IntPair> result = new ArrayList<>();
         for (IntPair cell : pair.nearby()) {
-            if (colorCell(cell)) {
-                boost(cell);
+            List<IntPair> colored = colorCell0(cell);
+            result.addAll(colored);
+            if (!colored.isEmpty()) {
+                result.addAll(boost0(cell));
             }
         }
+        return result;
     }
 
     private void changeGameMode(Integer mode) {
         gameMode = mode;
         modeChangeListeners.forEach(action -> action.accept(mode));
+    }
+
+    public void switchToHistoryMode() {
+        changeGameMode(HISTORY_MODE);
+        colorArray = new Integer[getWidth()][getHeight()];
+        historyStep = 0;
+        coloredCellsCount = 0;
+    }
+
+    public void nextHistoryStep() {
+        if (historyStep == history.size()) {
+            return;
+        }
+        List<IntPair> cells = history.get(historyStep);
+        cells.forEach(pair -> {
+            colorArray[pair.getX()][pair.getY()] = initialColorArray[pair.getX()][pair.getY()];
+            coloredCellsCount ++;
+        });
+
+        historyStep ++;
     }
 
     public void addModeChangeListener(Consumer<Integer> listener) {

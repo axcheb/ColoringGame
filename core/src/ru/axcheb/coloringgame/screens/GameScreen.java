@@ -67,7 +67,8 @@ public class GameScreen implements Screen {
                     coloringGame.setScreen(new MenuScreen(coloringGame));
                     me.dispose();
                 } else if (HISTORY_ACTION.equals(object)) {
-
+                    ImageState imageState = coloringGame.getImageState();
+                    imageState.switchToHistoryMode();
                 }
 
             }
@@ -89,6 +90,11 @@ public class GameScreen implements Screen {
 
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        ImageState imageState = coloringGame.getImageState();
+        if (ImageState.HISTORY_MODE.equals(imageState.getGameMode())) {
+            imageState.nextHistoryStep(); // TODO change history step time
+        }
 
         imagePanel.render();
         colorButtonsPanel.render();
