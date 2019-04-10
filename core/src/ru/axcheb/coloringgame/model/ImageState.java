@@ -13,15 +13,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static ru.axcheb.coloringgame.model.GameMode.*;
+
 public abstract class ImageState {
 
-    private Integer gameMode;
+    private GameMode gameMode;
 
-    public static Integer PLAYING_MODE = 1;
-    public static Integer COMPLETED_MODE = 2;
-    public static Integer HISTORY_MODE = 3;
-
-    private List<Consumer<Integer>> modeChangeListeners = new ArrayList<>();
+    private List<Consumer<GameMode>> modeChangeListeners = new ArrayList<>();
 
     private Integer[][] initialColorArray;
     private Integer[][] colorArray;
@@ -107,7 +105,7 @@ public abstract class ImageState {
     }
 
     public void selectColor(int colorNumber) {
-        selectedColorNumber = colorNumber;
+        selectedColorNumber = (selectedColorNumber == null || colorNumber != selectedColorNumber) ? colorNumber : null;
         isBomb = false;
     }
 
@@ -125,6 +123,9 @@ public abstract class ImageState {
     }
 
     public List<IntPair> colorCell(IntPair pair) {
+        if (gameMode != PLAYING_MODE) {
+            return Collections.emptyList();
+        }
         List<IntPair> result = colorCell0(pair);
         if (!result.isEmpty()) {
             history.add(result);
@@ -167,6 +168,9 @@ public abstract class ImageState {
     }
 
     public List<IntPair> boost(IntPair pair) {
+        if (gameMode != PLAYING_MODE) {
+            return Collections.emptyList();
+        }
         List<IntPair> result = boost0(pair);
         if (!result.isEmpty()) {
             history.add(result);
@@ -190,7 +194,7 @@ public abstract class ImageState {
         return result;
     }
 
-    private void changeGameMode(Integer mode) {
+    private void changeGameMode(GameMode mode) {
         gameMode = mode;
         modeChangeListeners.forEach(action -> action.accept(mode));
     }
@@ -212,10 +216,14 @@ public abstract class ImageState {
             coloredCellsCount ++;
         });
 
+        if (isCompleted()) {
+            changeGameMode(HISTORY_COMPLETED_MODE);
+        }
+
         historyStep ++;
     }
 
-    public void addModeChangeListener(Consumer<Integer> listener) {
+    public void addModeChangeListener(Consumer<GameMode> listener) {
         modeChangeListeners.add(listener);
     }
 
@@ -231,7 +239,7 @@ public abstract class ImageState {
         return coloredCellsCount == cellsCount;
     }
 
-    public Integer getGameMode() {
+    public GameMode getGameMode() {
         return gameMode;
     }
 

@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.axcheb.coloringgame.ColoringGame;
@@ -20,31 +21,27 @@ public class MenuScreen implements Screen {
     private Stage stage;
     private ColoringGame coloringGame;
     private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+    private TextField field;
 
     public MenuScreen(ColoringGame coloringGame) {
         this.coloringGame = coloringGame;
         stage = new Stage(new FitViewport(WORLD_WIDTH, WORLD_HEIGHT));
-//        Label title = new Label("Title", new Label.LabelStyle(new BitmapFont(Gdx.files.internal("default.fnt")), Color.RED));
-//        title.setAlignment(Align.center);
-//        title.setY(Gdx.graphics.getHeight()*2/3);
-//        title.setWidth(Gdx.graphics.getWidth());
-//        stage.addActor(title);
 
+        field = createField();
+        stage.addActor(field);
         stage.addActor(createPlayButton());
-        stage.addActor(createHistoryButton());
-        stage.addActor(createChooseButton());
 
         Gdx.input.setInputProcessor(stage);
     }
 
     private TextButton createPlayButton() {
         TextButton playButton = new TextButton("Play", skin, "default");
-        playButton.setBounds(WORLD_WIDTH / 2f - 50f, WORLD_HEIGHT - 100, 100f, 30f);
+        playButton.setBounds(WORLD_WIDTH / 2f - 50f, WORLD_HEIGHT - 150, 100f, 30f);
         Screen me = this;
         playButton.addListener(new InputListener() {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                coloringGame.setScreen(new GameScreen(coloringGame));
+                coloringGame.setScreen(new GameScreen(coloringGame, field.getText()));
                 me.dispose();
             }
 
@@ -57,16 +54,10 @@ public class MenuScreen implements Screen {
         return playButton;
     }
 
-    private TextButton createHistoryButton() {
-        TextButton historyButton = new TextButton("History", skin, "default");
-        historyButton.setBounds(WORLD_WIDTH / 2f - 50f, WORLD_HEIGHT - 150, 100f, 30f);
-        return historyButton;
-    }
-
-    private TextButton createChooseButton() {
-        TextButton chooseButton = new TextButton("Choose file", skin, "default");
-        chooseButton.setBounds(WORLD_WIDTH / 2f - 50f, WORLD_HEIGHT - 200, 100f, 30f);
-        return chooseButton;
+    private TextField createField() {
+        TextField field = new TextField("bb-cnt-2019.gif", skin);
+        field.setBounds(WORLD_WIDTH / 2f - 100f, WORLD_HEIGHT - 100, 200f, 30f);
+        return field;
     }
 
     @Override

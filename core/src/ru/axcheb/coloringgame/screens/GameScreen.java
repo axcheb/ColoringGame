@@ -19,10 +19,15 @@ import ru.axcheb.coloringgame.view.ColorButtonsPanel;
 import ru.axcheb.coloringgame.view.CounterPanel;
 import ru.axcheb.coloringgame.view.ImagePanel;
 
+import static ru.axcheb.coloringgame.model.GameMode.*;
+
 public class GameScreen implements Screen {
 
     public static float WORLD_WIDTH = 720f;
     public static float WORLD_HEIGHT = 1280f;
+
+    private static float HISTORY_STEP = 5f / 60f; // 5 times in second
+    private static float historyStepDelta = HISTORY_STEP;
 
     private ColorButtonsPanel colorButtonsPanel;
     private ImagePanel imagePanel;
@@ -35,7 +40,7 @@ public class GameScreen implements Screen {
     private static String EXIT_ACTION = "exit";
     private static String HISTORY_ACTION = "history";
 
-    public GameScreen(ColoringGame coloringGame) {
+    public GameScreen(ColoringGame coloringGame, String filename) {
         this.coloringGame = coloringGame;
         stage = new Stage(new FitViewport(WORLD_WIDTH, WORLD_HEIGHT));
         ImageState imageState = coloringGame.getImageState();
@@ -45,12 +50,13 @@ public class GameScreen implements Screen {
 
         completedDialog = createCompletedDialog();
         imageState.addModeChangeListener(mode -> {
-            if (ImageState.COMPLETED_MODE.equals(mode)) {
+            if (COMPLETED_MODE.equals(mode) ||
+                    HISTORY_COMPLETED_MODE.equals(mode)) {
                 completedDialog.show(stage);
             }
         });
 
-        imageState.init("bb-cnt-2019.gif");
+        imageState.init(filename);
 
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(stage);
@@ -92,8 +98,14 @@ public class GameScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         ImageState imageState = coloringGame.getImageState();
-        if (ImageState.HISTORY_MODE.equals(imageState.getGameMode())) {
-            imageState.nextHistoryStep(); // TODO change history step time
+        if (HISTORY_MODE == imageState.getGameMode()) {
+
+            if (historyStepDelta > 0) {
+                historyStepDelta -= delta;
+            } else {
+                historyStepDelta = HISTORY_STEP;
+                imageState.nextHistoryStep();
+            }
         }
 
         imagePanel.render();

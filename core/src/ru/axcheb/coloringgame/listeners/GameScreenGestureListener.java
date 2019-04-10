@@ -15,15 +15,20 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
     private ImagePanel imagePanel;
     private ColorButtonsPanel colorButtonsPanel;
     private ImageState imageState;
+    private float imageZoom;
+    private OrthographicCamera imagePanelcamera;
 
     public GameScreenGestureListener(ImagePanel imagePanel, ColorButtonsPanel colorButtonsPanel, ImageState imageState) {
         this.imagePanel = imagePanel;
         this.colorButtonsPanel = colorButtonsPanel;
         this.imageState = imageState;
+        imagePanelcamera = (OrthographicCamera) imagePanel.getViewport().getCamera();
+        imageZoom = imagePanelcamera.zoom;
     }
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
+        imageZoom = imagePanelcamera.zoom;
         colorCellOnTouch(x, y);
         return true;
     }
@@ -72,10 +77,20 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-        if (imageState.getSelectedColorNumber() == null) {
-            return false;
+        Gdx.app.log("INFO", "pan");
+        Vector2 unProject = imagePanel.getViewport().unproject(new Vector2(x, y));
+        IntPair imgCoordinate = imagePanel.getImageCoordinate(unProject);
+        // We can move camera if color not picked or coordinate out of image (imgCoordinate == null) or if selected color != touched image color.
+        boolean canTranslate = (imageState.getSelectedColorNumber() == null ||
+                imgCoordinate == null ||
+                !imageState.getSelectedColorNumber().equals(imageState.getInitialNumberByCoordinate(imgCoordinate.getX(), imgCoordinate.getY()))
+        );
+
+        if (canTranslate) {
+            imagePanelcamera.translate(- deltaX, deltaY, 0);
+        } else {
+            colorCellOnPan(x, y, deltaX, deltaY);
         }
-        colorCellOnPan(x, y, deltaX, deltaY);
         return true;
     }
 
@@ -94,9 +109,7 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean zoom(float initialDistance, float distance) {
-        OrthographicCamera camera = (OrthographicCamera) imagePanel.getViewport().getCamera();
-        Gdx.app.log("INFO", "Zoom performed");
-        camera.zoom = (initialDistance / distance) * camera.zoom;
+        imagePanelcamera.zoom = (initialDistance / distance) * imageZoom;
         imagePanel.getViewport().apply();
         return true;
     }
@@ -108,7 +121,6 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public void pinchStop() {
-        Gdx.app.log("INFO", "pinchStop");
     }
 
 }
