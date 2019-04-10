@@ -23,11 +23,11 @@ import static ru.axcheb.coloringgame.model.GameMode.*;
 
 public class GameScreen implements Screen {
 
-    public static float WORLD_WIDTH = 720f;
-    public static float WORLD_HEIGHT = 1280f;
+    public static float WORLD_WIDTH = Gdx.graphics.getWidth();
+    public static float WORLD_HEIGHT = Gdx.graphics.getHeight();
 
-    private static float HISTORY_STEP = 5f / 60f; // 5 times in second
-    private static float historyStepDelta = HISTORY_STEP;
+    private static final float HISTORY_STEP = 5f / 60f; // 5 times in second
+    private float historyStepDelta = HISTORY_STEP;
 
     private ColorButtonsPanel colorButtonsPanel;
     private ImagePanel imagePanel;
@@ -37,8 +37,8 @@ public class GameScreen implements Screen {
     private Stage stage;
     private Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 
-    private static String EXIT_ACTION = "exit";
-    private static String HISTORY_ACTION = "history";
+    private static final String EXIT_ACTION = "exit";
+    private static final String HISTORY_ACTION = "history";
 
     public GameScreen(ColoringGame coloringGame, String filename) {
         ImageState imageState = coloringGame.getImageState();
@@ -92,6 +92,7 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         GameScreenKeyListener.handleKeyPress((OrthographicCamera) imagePanel.getViewport().getCamera());
         imagePanel.getViewport().apply();
+        colorButtonsPanel.getViewport().apply();
 
         Gdx.gl.glClearColor(1, 1, 1, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);

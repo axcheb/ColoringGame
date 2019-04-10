@@ -19,13 +19,13 @@ import static ru.axcheb.coloringgame.screens.GameScreen.WORLD_WIDTH;
 
 public class ColorButtonsPanel {
 
-    private static float COLOR_BUTTON_START = 40f;
+    private static final float COLOR_BUTTON_START = 40f;
 
-    private static float NORMAL_WIDTH = 40f;
-    private static float NORMAL_HEIGHT = 40f;
-    private static float SELECTED_HEIGHT = 60f;
+    public static final float NORMAL_WIDTH = 40f;
+    public static final float NORMAL_HEIGHT = 40f;
+    private static final float SELECTED_HEIGHT = 60f;
 
-    public static int COLOR_START_NUMBER = 1;
+    public static final int COLOR_START_NUMBER = 1;
 
     private Viewport viewport;
     private SpriteBatch batch;
@@ -53,14 +53,15 @@ public class ColorButtonsPanel {
     }
 
     private void renderBombButton() {
-        // TODO Бомба.   Выбирается как цвет, закрашивает область 10x10px нужными цветами.
         renderer.begin(ShapeRenderer.ShapeType.Filled);
-        renderer.setColor(Color.GREEN);
+        renderer.setColor(Color.RED);
         float height = NORMAL_HEIGHT;
         if (imageState.isBomb()) {
             height = SELECTED_HEIGHT;
         }
         renderer.rect(0f, 0f, NORMAL_WIDTH, height);
+        renderer.setColor(Color.GREEN);
+        renderer.rect(10f, 10f, NORMAL_WIDTH - 21f, height - 21f);
         renderer.end();
     }
 

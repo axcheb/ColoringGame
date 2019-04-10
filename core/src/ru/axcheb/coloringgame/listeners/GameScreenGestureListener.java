@@ -1,6 +1,5 @@
 package ru.axcheb.coloringgame.listeners;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.math.Vector2;
@@ -16,19 +15,21 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
     private ColorButtonsPanel colorButtonsPanel;
     private ImageState imageState;
     private float imageZoom;
-    private OrthographicCamera imagePanelcamera;
+    private OrthographicCamera imageCamera;
+    private OrthographicCamera colorButtonsCamera;
 
     public GameScreenGestureListener(ImagePanel imagePanel, ColorButtonsPanel colorButtonsPanel, ImageState imageState) {
         this.imagePanel = imagePanel;
         this.colorButtonsPanel = colorButtonsPanel;
         this.imageState = imageState;
-        imagePanelcamera = (OrthographicCamera) imagePanel.getViewport().getCamera();
-        imageZoom = imagePanelcamera.zoom;
+        imageCamera = (OrthographicCamera) imagePanel.getViewport().getCamera();
+        imageZoom = imageCamera.zoom;
+        colorButtonsCamera = (OrthographicCamera) colorButtonsPanel.getViewport().getCamera();
     }
 
     @Override
     public boolean touchDown(float x, float y, int pointer, int button) {
-        imageZoom = imagePanelcamera.zoom;
+        imageZoom = imageCamera.zoom;
         colorCellOnTouch(x, y);
         return true;
     }
@@ -77,8 +78,13 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean pan(float x, float y, float deltaX, float deltaY) {
-        Gdx.app.log("INFO", "pan");
-        Vector2 unProject = imagePanel.getViewport().unproject(new Vector2(x, y));
+        Vector2 unProject = colorButtonsPanel.getViewport().unproject(new Vector2(x, y));
+        if (unProject.y < ColorButtonsPanel.NORMAL_HEIGHT) {
+            colorButtonsCamera.translate(- deltaX, 0, 0);
+            return true;
+        }
+
+        unProject = imagePanel.getViewport().unproject(new Vector2(x, y));
         IntPair imgCoordinate = imagePanel.getImageCoordinate(unProject);
         // We can move camera if color not picked or coordinate out of image (imgCoordinate == null) or if selected color != touched image color.
         boolean canTranslate = (imageState.getSelectedColorNumber() == null ||
@@ -87,7 +93,7 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
         );
 
         if (canTranslate) {
-            imagePanelcamera.translate(- deltaX, deltaY, 0);
+            imageCamera.translate(- deltaX, deltaY, 0);
         } else {
             colorCellOnPan(x, y, deltaX, deltaY);
         }
@@ -109,7 +115,7 @@ public class GameScreenGestureListener implements GestureDetector.GestureListene
 
     @Override
     public boolean zoom(float initialDistance, float distance) {
-        imagePanelcamera.zoom = (initialDistance / distance) * imageZoom;
+        imageCamera.zoom = (initialDistance / distance) * imageZoom;
         imagePanel.getViewport().apply();
         return true;
     }

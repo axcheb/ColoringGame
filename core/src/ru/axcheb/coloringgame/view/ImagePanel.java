@@ -20,8 +20,8 @@ import static ru.axcheb.coloringgame.screens.GameScreen.WORLD_WIDTH;
 
 public class ImagePanel {
 
-    private static float BOTTOM_SIZE = 40f;
-    private static float CELL_SIZE = 30f;
+    private static final float BOTTOM_SIZE = 40f;
+    private static final float CELL_SIZE = 30f;
 
     private ImageState imageState;
     private SpriteBatch batch;
@@ -41,6 +41,28 @@ public class ImagePanel {
         camera = new OrthographicCamera();
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
         viewport.apply(true);
+
+
+        translateImageToCenter();
+    }
+
+    private void translateImageToCenter() {
+        float imageWidth = imageState.getWidth() * CELL_SIZE;
+        float deltaX = 0;
+        float deltaY = 0;
+        if (imageWidth > WORLD_WIDTH) {
+            deltaX = (imageWidth - WORLD_WIDTH) / 2f;
+        }
+
+        float imageHeight = imageState.getHeight() * CELL_SIZE;
+        if (imageHeight > WORLD_HEIGHT) {
+            deltaY = (imageHeight - WORLD_HEIGHT) / 2f;
+        }
+
+        float zoom = Math.max(imageWidth / WORLD_WIDTH, imageHeight / WORLD_HEIGHT);
+
+        camera.translate(deltaX, deltaY, 0);
+        camera.zoom = zoom;
     }
 
     public void render() {
@@ -63,8 +85,6 @@ public class ImagePanel {
             renderer.rect(cellVector.x, cellVector.y, CELL_SIZE, CELL_SIZE);
         });
         renderer.end();
-
-        // TODO render only if zoom > xxx
 
         batch.begin();
         renderCell((i, j) -> {
