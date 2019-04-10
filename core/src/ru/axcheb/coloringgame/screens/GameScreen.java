@@ -41,9 +41,10 @@ public class GameScreen implements Screen {
     private static String HISTORY_ACTION = "history";
 
     public GameScreen(ColoringGame coloringGame, String filename) {
+        ImageState imageState = coloringGame.getImageState();
+        imageState.init(filename);
         this.coloringGame = coloringGame;
         stage = new Stage(new FitViewport(WORLD_WIDTH, WORLD_HEIGHT));
-        ImageState imageState = coloringGame.getImageState();
         colorButtonsPanel = new ColorButtonsPanel(imageState);
         imagePanel = new ImagePanel(imageState);
         counterPanel = new CounterPanel(imageState);
@@ -55,8 +56,6 @@ public class GameScreen implements Screen {
                 completedDialog.show(stage);
             }
         });
-
-        imageState.init(filename);
 
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(stage);

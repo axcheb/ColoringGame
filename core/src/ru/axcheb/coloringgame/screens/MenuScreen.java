@@ -6,9 +6,11 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import ru.axcheb.coloringgame.ColoringGame;
@@ -38,11 +40,23 @@ public class MenuScreen implements Screen {
         TextButton playButton = new TextButton("Play", skin, "default");
         playButton.setBounds(WORLD_WIDTH / 2f - 50f, WORLD_HEIGHT - 150, 100f, 30f);
         Screen me = this;
+
+        Dialog cantOpenDialog = new Dialog("", skin);
+        cantOpenDialog.text("Can't open this file!");
+        cantOpenDialog.button("Ok");
+
         playButton.addListener(new InputListener() {
             @Override
             public void touchUp (InputEvent event, float x, float y, int pointer, int button) {
-                coloringGame.setScreen(new GameScreen(coloringGame, field.getText()));
-                me.dispose();
+                GameScreen screen;
+                try {
+                    screen = new GameScreen(coloringGame, field.getText());
+                    coloringGame.setScreen(screen);
+                    me.dispose();
+                } catch (GdxRuntimeException e) {
+                    cantOpenDialog.show(stage);
+                    cantOpenDialog.setPosition(Math.round((stage.getWidth() - cantOpenDialog.getWidth()) / 2), WORLD_HEIGHT - 300);
+                }
             }
 
             @Override
