@@ -59,6 +59,7 @@ public class GameScreen implements Screen {
 
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(stage);
+        inputMultiplexer.addProcessor(new GameScreenKeyListener((OrthographicCamera) imagePanel.getViewport().getCamera(), coloringGame));
         inputMultiplexer.addProcessor(new GestureDetector(new GameScreenGestureListener(imagePanel, colorButtonsPanel, imageState)));
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
@@ -90,7 +91,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        GameScreenKeyListener.handleKeyPress((OrthographicCamera) imagePanel.getViewport().getCamera());
         imagePanel.getViewport().apply();
         colorButtonsPanel.getViewport().apply();
 
